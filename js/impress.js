@@ -319,7 +319,6 @@
                         z: toNumber(data.rotateZ || data.rotate)
                     },
                     scale: toNumber(data.scale, 1),
-                    order: toNumber(data.order),
 		    duration: toNumber(data.duration),
                     el: el
                 };
@@ -405,6 +404,7 @@
 
             // get the user-defined step order (a list of step ids)
             var order = $('#impress').dataset.step_order.split(/\s+/);
+	    order = order.filter(function lambda(value, index, array) {;if (value === "") {return false;} else {return true;}});
 
             // if this user-defined step order exists, then produce the steps in the user-defined order
             if (order !== null) {
