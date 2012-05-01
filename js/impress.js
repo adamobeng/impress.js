@@ -21,6 +21,12 @@
 
 // You are one of those who like to know how thing work inside?
 // Let me show you the cogs that make impress.js run...
+//
+// TODO Overview, with slide order
+// TODO Position in slides
+// TODO Print function
+// TODO Speaker annotations
+// TODO Make transition duration a per-slide property
 (function ( document, window ) {
     'use strict';
     
@@ -243,6 +249,9 @@
         
         // element of currently active step
         var activeStep = null;
+
+        // index of active step in steps, if a user-defined order has been provided
+        var activeOrder = null;
         
         // current state (position, rotation and scale) of the presentation
         var currentState = null;
@@ -309,6 +318,7 @@
                         z: toNumber(data.rotateZ || data.rotate)
                     },
                     scale: toNumber(data.scale, 1),
+                    order: toNumber(data.order),
                     el: el
                 };
             
@@ -386,9 +396,28 @@
             body.classList.remove("impress-disabled");
             body.classList.add("impress-enabled");
             
-            // get and init steps
-            steps = $$(".step", root);
-            steps.forEach( initStep );
+            // get and init steps in the order they are in the document
+            var rawSteps = null;
+            rawSteps = $$(".step", root);
+            rawSteps.forEach( initStep );
+
+            // get the user-defined step order (a list of step ids)
+            var order = $('#impress').dataset.step_order.split(/\s+/);
+
+            // if this user-defined step order exists, then produce the steps in the user-defined order
+            if (order !== null) {
+                steps = [];
+                for (var i in order) {
+                    var el = $(order[i]);
+                    if (el) {steps.push(el);}
+                }
+                // and define the variable which tells us which step we're on 
+            activeOrder = 0;
+            }
+            else {
+                steps = rawSteps;
+            }
+
             
             // set a default initial state of the canvas
             currentState = {
@@ -550,7 +579,15 @@
         
         // `prev` API function goes to previous step (in document order)
         var prev = function () {
-            var prev = steps.indexOf( activeStep ) - 1;
+            var prev = null;
+            // if there is a user-defined step order, then activeOrder is defined, so use it to find the previous step
+            if (activeOrder !== null) {
+                activeOrder = activeOrder - 1;
+                prev = activeOrder;
+            }
+            else {
+                prev = steps.indexOf( activeStep ) - 1;
+            }
             prev = prev >= 0 ? steps[ prev ] : steps[ steps.length-1 ];
             
             return goto(prev);
@@ -558,7 +595,14 @@
         
         // `next` API function goes to next step (in document order)
         var next = function () {
-            var next = steps.indexOf( activeStep ) + 1;
+            var next = null;
+            if (activeOrder !== null) {
+                activeOrder = activeOrder + 1;
+                next = activeOrder;
+            }
+            else {
+                next = steps.indexOf( activeStep ) + 1;
+            }
             next = next < steps.length ? steps[ next ] : steps[ 0 ];
             
             return goto(next);
