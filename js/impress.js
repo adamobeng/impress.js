@@ -26,7 +26,8 @@
 // TODO Position in slides
 // TODO Print function
 // TODO Speaker annotations
-// TODO Make transition duration a per-slide property
+// TODO Overview which allows perspective adjustment on the fly
+// TODO When accessing page via URL fragment, load the right step number if using user-defined step order
 (function ( document, window ) {
     'use strict';
     
