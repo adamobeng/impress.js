@@ -319,6 +319,7 @@
                     },
                     scale: toNumber(data.scale, 1),
                     order: toNumber(data.order),
+		    duration: toNumber(data.duration),
                     el: el
                 };
             
@@ -500,6 +501,7 @@
             var zoomin = target.scale >= currentState.scale;
             
             duration = toNumber(duration, config.transitionDuration);
+            duration = toNumber(el.dataset.duration, duration);
             var delay = (duration / 2);
             
             // if the same step is re-selected, force computing window scaling,
