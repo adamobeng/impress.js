@@ -28,6 +28,11 @@
 // TODO Speaker annotations
 // TODO Overview which allows perspective adjustment on the fly
 // TODO When accessing page via URL fragment, load the right step number if using user-defined step order
+// TODO Timer, and tight feedback loop about whether to slow down or speed up
+// TODO Timer, and tight feedback loop about whether to slow down or speed up
+// TODO Within-slide animatino (see Google's slide thing).
+// TODO Test 
+// TODO Automatic overview if possible
 (function ( document, window ) {
     'use strict';
     
@@ -234,7 +239,8 @@
                 init: empty,
                 goto: empty,
                 prev: empty,
-                next: empty
+                next: empty,
+                overview: empty
             };
         }
         
@@ -452,7 +458,7 @@
         // `goto` API function that moves to step given with `el` parameter (by index, id or element),
         // with a transition `duration` optionally given as second parameter.
         var goto = function ( el, duration ) {
-            
+//FIXME console.log(el.id, stepsData);
             if ( !initialized || !(el = getStep(el)) ) {
                 // presentation not initialized or given element is not a step
                 return false;
@@ -611,6 +617,26 @@
             return goto(next);
         };
         
+	var overview = function() {
+		var stepNames = [];
+		for (var step in stepsData) {
+			stepNames.push(stepsData[step].el.id);
+		}
+		for (var step in stepsData) {
+			var transform = stepsData[step].el.style['webkitTransform'];
+			var translate3d = transform.match('translate3d\(');
+			console.log(translate3d, transform);
+
+		}
+
+		console.log(stepNames);
+		css(root, {
+			transform: perspective(config.perspective / windowScale) + scale( 0.1 ),
+			transitionDuration: config.duration + "ms",
+			transitionDelay: "0ms"
+		    });
+
+		}
         // Adding some useful classes to step elements.
         //
         // All the steps that have not been shown yet are given `future` class.
@@ -682,7 +708,8 @@
             init: init,
             goto: goto,
             next: next,
-            prev: prev
+            prev: prev,
+            overview: overview
         });
 
     };
