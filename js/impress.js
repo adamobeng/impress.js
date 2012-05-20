@@ -275,6 +275,12 @@
         // root presentation elements
         var root = byId( rootId );
         var canvas = document.createElement("div");
+
+	var nav = document.createElement("div");
+	nav.setAttribute('id', 'nav');
+    	css(nav, {position: 'absolute'});
+
+	root.appendChild(nav);
         
         var initialized = false;
         
@@ -459,6 +465,7 @@
         // with a transition `duration` optionally given as second parameter.
         var goto = function ( el, duration ) {
 //FIXME console.log(el.id, stepsData);
+console.log('goto', el.id);
             if ( !initialized || !(el = getStep(el)) ) {
                 // presentation not initialized or given element is not a step
                 return false;
@@ -583,6 +590,9 @@
                 onStepEnter(activeStep);
             }, duration + delay);
             
+	    css(nav, {
+		    transform: rotate(step.rotate) +  translate({x: step.translate.x, y:step.translate.y + 300 , z:step.translate.z}) + scale(step.scale) + 'translate(-50%, 0)',
+	    })
             return el;
         };
         
@@ -622,19 +632,35 @@
 		for (var step in stepsData) {
 			stepNames.push(stepsData[step].el.id);
 		}
+		var max_coords = [-Infinity, -Infinity, -Infinity];
+		var min_coords = [Infinity, Infinity, Infinity];
 		for (var step in stepsData) {
 			var transform = stepsData[step].el.style['webkitTransform'];
-			var translate3d = transform.match('translate3d\(');
-			console.log(translate3d, transform);
+			var translate3d = transform.match(/translate3d\((.*?)\)/);
+			var coords = translate3d[1].split(', ');
+			coords = coords.map(function(item, index, array) {return parseInt(item.replace('px', ''))});
+			console.log(coords);
+			for (var c in [0, 1, 2]) {
+				max_coords[c] = (coords[c] > max_coords[c]) ? coords[c] : max_coords[c];
+				min_coords[c] = (coords[c] < min_coords[c]) ? coords[c] : min_coords[c];
+			}
 
 		}
+		console.log(max_coords, min_coords);
 
-		console.log(stepNames);
-		css(root, {
-			transform: perspective(config.perspective / windowScale) + scale( 0.1 ),
-			transitionDuration: config.duration + "ms",
-			transitionDelay: "0ms"
-		    });
+		for (var name in stepNames) {
+			var nav = document.createElement('a');
+			console.log(nav);
+			nav.setAttribute('href', '#' + stepNames[name]);
+			nav.innerHTML = stepNames[name];
+			$('#nav').appendChild(nav);
+			if (stepNames[name] === activeStep.id) {nav.classList.add("current")}
+		}
+		//css(root, {
+			//transform: perspective(config.perspective / windowScale) + scale( 0.1 ),
+			//transitionDuration: config.duration + "ms",
+			//transitionDelay: "0ms"
+		    //});
 
 		}
         // Adding some useful classes to step elements.
@@ -807,6 +833,7 @@
             }
             
             if ( target.tagName === "A" ) {
+
                 var href = target.getAttribute("href");
                 
                 // if it's a link to presentation step, target this step
